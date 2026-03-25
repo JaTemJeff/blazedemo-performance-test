@@ -148,3 +148,4 @@ Embora não apresente falhas funcionais, a aplicação demonstra limitações cl
 Sob carga de pico, há degradação significativa de performance, reforçando a limitação estrutural do sistema.
 
 ---
+# blazedemo-performance-test
