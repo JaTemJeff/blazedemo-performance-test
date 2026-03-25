@@ -2,11 +2,11 @@
 
 ## 📌 Overview
 
-Este projeto contém testes de performance para o fluxo de compra de passagem aérea no site:
+Este projeto contém testes de performance para o fluxo completo de compra de passagem aérea no site:
 
 🔗 https://www.blazedemo.com
 
-O objetivo é validar se a aplicação suporta a carga definida no critério de aceitação.
+O objetivo é avaliar o comportamento da aplicação sob diferentes padrões de carga e verificar o atendimento aos critérios definidos.
 
 ---
 
@@ -35,6 +35,7 @@ Validação de sucesso:
 ## ⚙️ Ferramentas
 
 * Apache JMeter 5.6.3
+* Execução em modo **non-GUI (CLI)**
 
 ---
 
@@ -42,28 +43,42 @@ Validação de sucesso:
 
 ```
 jmeter/
- ├── blazedemo-load-test.jmx
+ └── blazedemo-test.jmx
 
 results/
- ├── load-test-report/
- ├── spike-test-report/
+ └── report/
+      └── index.html
 ```
 
 ---
 
 ## ▶️ Como executar
 
+```bash
+jmeter -n -t jmeter/blazedemo-test.jmx -l results/results.jtl -e -o results/report
+```
+
+---
+
+## 🧪 Estrutura do teste
+
+O plano de teste foi implementado em um único arquivo `.jmx`, contendo dois cenários:
+
 ### 🔹 Load Test
 
-```bash
-jmeter -n -t jmeter/blazedemo-load-test.jmx -l results/load.jtl -e -o results/load-test-report
-```
+* 250 usuários
+* Ramp-up: 10s
+* Duração: 60s
+* Controle de throughput: 250 RPS (Constant Throughput Timer)
+
+---
 
 ### 🔹 Spike Test
 
-```bash
-jmeter -n -t jmeter/blazedemo-spike-test.jmx -l results/spike.jtl -e -o results/spike-test-report
-```
+* 500 usuários
+* Ramp-up: 1s
+* Duração: 30s
+* Sem controle de throughput (simulação de pico real)
 
 ---
 
@@ -93,48 +108,48 @@ jmeter -n -t jmeter/blazedemo-spike-test.jmx -l results/spike.jtl -e -o results/
 
 ### ❌ Load Test
 
-* O sistema atingiu aproximadamente **32.3 req/s**, muito abaixo do esperado (250 req/s).
-* O tempo de resposta p90 ficou em **2005 ms**, ligeiramente acima do limite definido.
-* Não foram observados erros, indicando estabilidade funcional.
+* O sistema não atingiu o throughput esperado (250 RPS).
+* O p90 ficou ligeiramente acima do limite.
+* Não houve erros, indicando estabilidade funcional.
 
-📌 **Conclusão:**
-O sistema não atende ao critério de aceitação, principalmente por não conseguir atingir o throughput esperado.
+📌 **Interpretação:**
+O sistema responde corretamente sob carga moderada, porém não escala para o volume esperado.
 
 ---
 
 ### ⚠️ Spike Test
 
-* O throughput caiu ainda mais para **23 req/s**.
-* O tempo de resposta degradou significativamente (p90 = **4830 ms**).
-* Pequena taxa de erro foi observada (0.01%).
+* Redução do throughput.
+* Aumento significativo do tempo de resposta.
+* Pequena taxa de erro.
 
-📌 **Conclusão:**
-O sistema apresenta forte degradação sob carga abrupta, indicando baixa capacidade de escalabilidade.
+📌 **Interpretação:**
+O sistema apresenta degradação sob carga abrupta, indicando limitação de escalabilidade.
 
 ---
 
 ## 🧠 Análise Técnica
 
-* O baixo throughput indica que o sistema não consegue processar requisições em paralelo na escala exigida.
-* O aumento do tempo de resposta sob carga demonstra saturação de recursos.
-* O endpoint inicial (`GET /`) apresentou maior latência, impactando o fluxo completo.
-* Como o teste simula um fluxo completo, o tempo total da transação influencia diretamente o throughput.
+* O throughput é diretamente impactado pelo tempo de resposta das requisições.
+* O endpoint inicial (`GET /`) apresentou maior latência, afetando todo o fluxo.
+* Como o teste simula uma transação completa, o tempo total da jornada impacta o volume de requisições por segundo.
+* O sistema demonstra comportamento estável, porém não escalável.
 
 ---
 
 ## 🧪 Decisões Técnicas
 
-* Foi utilizado **Constant Throughput Timer** no Load Test para controle de 250 RPS.
-* No **Spike Test**, o controle de throughput foi removido para simular picos reais.
-* Utilizado **Response Assertion** para validar sucesso da compra.
-* Configurado **HTTP Header Manager** com `Content-Type: application/x-www-form-urlencoded`.
+* Uso de **Constant Throughput Timer** para controle de carga no Load Test.
+* Remoção do controle de throughput no Spike Test para simular cenários reais.
+* Uso de **Response Assertion** para garantir sucesso funcional.
+* Configuração de headers HTTP adequados para requisições POST.
 
 ---
 
 ## ⚠️ Observações
 
-* O BlazeDemo é uma aplicação de demonstração, não otimizada para alta carga.
-* Os resultados não representam ambientes reais de produção.
+* O BlazeDemo é uma aplicação de demonstração e não foi projetada para alta carga.
+* Os resultados não refletem um ambiente produtivo real.
 
 ---
 
@@ -142,9 +157,18 @@ O sistema apresenta forte degradação sob carga abrupta, indicando baixa capaci
 
 O sistema não atende ao critério de aceitação definido.
 
-Embora não apresente falhas funcionais, a aplicação demonstra limitações claras de escalabilidade, sendo incapaz de sustentar o volume de 250 requisições por segundo.
+Apesar de não apresentar falhas funcionais, a aplicação demonstra limitações claras de escalabilidade, sendo incapaz de sustentar 250 requisições por segundo.
 
-Sob carga de pico, há degradação significativa de performance, reforçando a limitação estrutural do sistema.
+O comportamento sob teste de pico reforça essa limitação, evidenciando degradação significativa de performance.
 
 ---
-# blazedemo-performance-test
+
+## 📎 Relatório
+
+O relatório completo pode ser acessado em:
+
+```
+results/report/index.html
+```
+
+---
