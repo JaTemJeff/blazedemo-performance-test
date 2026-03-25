@@ -43,7 +43,6 @@ Validação de sucesso:
 ```
 jmeter/
  ├── blazedemo-load-test.jmx
- ├── blazedemo-spike-test.jmx
 
 results/
  ├── load-test-report/
